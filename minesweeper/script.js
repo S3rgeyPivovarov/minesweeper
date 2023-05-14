@@ -1,5 +1,5 @@
 let sizeMatrix = 15;
-let numberOfMines = 2;
+let numberOfMines = 50;
 const matrix = [];
 
 const body = document.querySelector(".body");
@@ -23,7 +23,7 @@ function NewMatrix() {
   for (let i = 0; i < sizeMatrix; i++) {
     matrix.push([]);
     for (let j = 0; j < sizeMatrix; j++) {
-      matrix[i].push({ isMine: false, flag: false, open: false });
+      matrix[i].push({ isNotMine: true, flag: false, open: false });
     }
   }
 
@@ -49,8 +49,43 @@ function NewMatrix() {
   arrayMines.forEach((element) => {
     i = Math.trunc(element / sizeMatrix - 0.1);
     j = element - i * sizeMatrix - 1;
-    matrix[i][j].isMine = true;
+    matrix[i][j].isNotMine = false;
+  });
+
+  matrix.forEach((_, i) => {
+    matrix[i].forEach((element, j) => {
+      if (element.isNotMine) {
+        let n = 0;
+        if (i > 0 && !matrix[i - 1][j]) {
+          n++;
+        }
+        if (i > 0 && j < sizeMatrix - 1 && !matrix[i - 1][j + 1]) {
+          n++;
+        }
+        if (j < sizeMatrix - 1 && !matrix[i][j + 1]) {
+          n++;
+        }
+        if (i < sizeMatrix - 1 && j < sizeMatrix - 1 && !matrix[i + 1][j + 1]) {
+          n++;
+        }
+        if (i < sizeMatrix - 1 && !matrix[i + 1][j]) {
+          n++;
+        }
+        if (i < sizeMatrix - 1 && j > 0 && !matrix[i + 1][j - 1]) {
+          n++;
+        }
+        if (j > 0 && !matrix[i][j - 1]) {
+          n++;
+        }
+        if (i > 0 && j > 0 && !matrix[i - 1][j - 1]) {
+          n++;
+        }
+        element.isNotMine = n;
+      }
+    });
   });
 }
 
 NewMatrix();
+
+console.log(matrix);
