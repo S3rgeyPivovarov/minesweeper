@@ -8,32 +8,15 @@ body.innerHTML = "<div class='container'><div class='minesField'></div></div>";
 
 const minesField = document.querySelector(".minesField");
 
-function newMatrix() {
+function newMatrix(firstCell) {
   for (let i = 0; i < sizeMatrix; i++) {
     matrix.push([]);
     for (let j = 0; j < sizeMatrix; j++) {
       matrix[i].push({ isNotMine: true, isFlag: false, isOpen: false });
     }
   }
-}
-newMatrix();
-
-function createDom() {
-  minesField.innerHTML = "";
-  matrix.forEach((_, i) => {
-    matrix[i].forEach((_, j) => {
-      minesField.innerHTML += "<div class='cell'></div>";
-      minesField.style.width = sizeMatrix * 40 + "px";
-      minesField.style.height = sizeMatrix * 40 + "px";
-    });
-  });
-}
-createDom();
-let cell = document.querySelectorAll(".cell");
-
-function createFieldOfMines(firstCell) {
   function fuRandomNumber() {
-    return Math.floor(Math.random() * sizeMatrix ** 2 + 0.99999999);
+    return Math.trunc(Math.random() * sizeMatrix ** 2 - 0.0001);
   }
   let randomNumber, x;
   const arrayMines = [...Array(numberOfMines)];
@@ -50,16 +33,17 @@ function createFieldOfMines(firstCell) {
     }
     arrayMines[i] = randomNumber;
   });
-  console.log(arrayMines);
+
   arrayMines.forEach((element) => {
-    let i = Math.trunc(element / sizeMatrix - 0.1);
-    let j = element - i * sizeMatrix - 1;
+    let i = Math.trunc(element / sizeMatrix);
+    let j = element % sizeMatrix;
     matrix[i][j].isNotMine = false;
+    console.log(i, j, matrix);
   });
   matrix.forEach((_, i) => {
-    matrix[i].forEach((element, j) => {
+    matrix[i].forEach((_, j) => {
       if (matrix[i][j].isNotMine) {
-        let n = "";
+        let n = 0;
         if (i > 0 && !matrix[i - 1][j].isNotMine) {
           n++;
         }
@@ -88,21 +72,41 @@ function createFieldOfMines(firstCell) {
         if (i > 0 && j > 0 && !matrix[i - 1][j - 1].isNotMine) {
           n++;
         }
-        matrix[i][j].isNotMine = n;
+        if (n) {
+          matrix[i][j].isNotMine = n;
+        } else {
+          matrix[i][j].isNotMine = true;
+        }
       }
     });
   });
 }
 
+function createDom() {
+  minesField.innerHTML = "";
+  for (let i = 0; i < sizeMatrix ** 2; i++) {
+    minesField.innerHTML += "<div class='cell'></div>";
+    minesField.style.width = sizeMatrix * 40 + "px";
+    minesField.style.height = sizeMatrix * 40 + "px";
+  }
+}
+createDom();
+let cell = document.querySelectorAll(".cell");
+
 function refactorDom() {
   let i, j;
   cell.forEach((element, k) => {
     i = Math.trunc(k / sizeMatrix);
-    j = k - i * sizeMatrix;
+    //уточнить
+    j = k % sizeMatrix;
     if (matrix[i][j].isOpen) {
       element.style.outline = "none";
       if (matrix[i][j].isNotMine) {
-        element.innerHTML = matrix[i][j].isNotMine;
+        if (matrix[i][j].isNotMine === true) {
+          element.innerHTML = "";
+        } else {
+          element.innerHTML = matrix[i][j].isNotMine;
+        }
       } else {
         element.innerHTML = "*";
         element.classList.add("mine");
@@ -110,7 +114,6 @@ function refactorDom() {
     }
   });
 }
-refactorDom();
 
 function gameOver() {
   matrix.forEach((_, i) =>
@@ -122,21 +125,17 @@ function gameOver() {
   );
 }
 
-console.log(matrix);
+let matrixIsCreate = false;
 
 cell.forEach((element, k) => {
   element.addEventListener("click", (event) => {
-    matrix.forEach((_, i) => {
-      matrix[i].forEach((element) => {
-        if (!element.isOpen) {
-          console.log(k);
-          createFieldOfMines(k);
-        }
-      });
-    });
+    if (!matrixIsCreate) {
+      newMatrix(k);
+      matrixIsCreate = true;
+    }
 
     let i = Math.trunc(k / sizeMatrix);
-    let j = k - i * sizeMatrix;
+    let j = k % sizeMatrix;
     if (!matrix[i][j].isOpen) {
       matrix[i][j].isOpen = true;
       if (!matrix[i][j].isNotMine) {
@@ -146,3 +145,5 @@ cell.forEach((element, k) => {
     refactorDom();
   });
 });
+
+function openingFreeCell() {}
