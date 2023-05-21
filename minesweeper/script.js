@@ -1,18 +1,53 @@
 let sizeMatrix = 10;
 let numberOfMines = 10;
-const matrix = [];
+
+let matrixIsCreate = false;
+
+let isBlockedCell = false;
+
+let matrix = [];
+savedMatrix = JSON.parse(localStorage.getItem("matrix"));
+console.log(savedMatrix);
 
 const body = document.querySelector(".body");
 
 body.innerHTML = "<div class='container'><div class='minesField'></div></div>";
 
+document
+  .querySelector(".container")
+  .addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+  });
+
 const minesField = document.querySelector(".minesField");
+
+function createDom() {
+  minesField.innerHTML = "";
+  for (let i = 0; i < sizeMatrix ** 2; i++) {
+    minesField.innerHTML += "<div class='cell'></div>";
+    minesField.style.width = sizeMatrix * 40 + "px";
+    minesField.style.height = sizeMatrix * 40 + "px";
+  }
+}
+createDom();
+let cell = document.querySelectorAll(".cell");
+
+//ghjdthbnm
+if (!savedMatrix === null) {
+  matrix = sizeMatrix;
+  refactorDom();
+}
 
 function newMatrix(firstCell) {
   for (let i = 0; i < sizeMatrix; i++) {
     matrix.push([]);
     for (let j = 0; j < sizeMatrix; j++) {
-      matrix[i].push({ isNotMine: true, isFlag: false, isOpen: false });
+      matrix[i].push({
+        isNotMine: true,
+        isFlag: false,
+        isOpen: false,
+        isOpenChecked: false,
+      });
     }
   }
   function fuRandomNumber() {
@@ -38,7 +73,6 @@ function newMatrix(firstCell) {
     let i = Math.trunc(element / sizeMatrix);
     let j = element % sizeMatrix;
     matrix[i][j].isNotMine = false;
-    console.log(i, j, matrix);
   });
   matrix.forEach((_, i) => {
     matrix[i].forEach((_, j) => {
@@ -82,22 +116,10 @@ function newMatrix(firstCell) {
   });
 }
 
-function createDom() {
-  minesField.innerHTML = "";
-  for (let i = 0; i < sizeMatrix ** 2; i++) {
-    minesField.innerHTML += "<div class='cell'></div>";
-    minesField.style.width = sizeMatrix * 40 + "px";
-    minesField.style.height = sizeMatrix * 40 + "px";
-  }
-}
-createDom();
-let cell = document.querySelectorAll(".cell");
-
 function refactorDom() {
   let i, j;
   cell.forEach((element, k) => {
     i = Math.trunc(k / sizeMatrix);
-    //уточнить
     j = k % sizeMatrix;
     if (matrix[i][j].isOpen) {
       element.style.outline = "none";
@@ -108,11 +130,149 @@ function refactorDom() {
           element.innerHTML = matrix[i][j].isNotMine;
         }
       } else {
-        element.innerHTML = "*";
-        element.classList.add("mine");
+        element.innerHTML = matrix[i][j].isFlag ? "&check;" : "&#x2715;";
+      }
+    } else {
+      if (matrix[i][j].isFlag) {
+        element.innerHTML = "!";
+      } else if (matrix[i][j].isNotMine === "winEnd") {
+        element.innerHTML = "&check;";
+      } else {
+        element.innerHTML = "";
       }
     }
   });
+}
+
+function openingFreeCell() {
+  let isNotFinishCheck = true;
+  while (isNotFinishCheck) {
+    isNotFinishCheck = false;
+    matrix.forEach((_, i) => {
+      matrix[i].forEach((element, j) => {
+        if (
+          element.isOpen === true &&
+          element.isOpenChecked === false &&
+          element.isNotMine === true
+        ) {
+          element.isOpenChecked = true;
+          isNotFinishCheck = true;
+          if (i === 0) {
+            if (j === 0) {
+              matrix[i + 1][j].isOpen = true;
+              matrix[i][j + 1].isOpen = true;
+              matrix[i + 1][j + 1].isOpen = true;
+            } else if (j === sizeMatrix - 1) {
+              matrix[i + 1][j].isOpen = true;
+              matrix[i][j - 1].isOpen = true;
+              matrix[i + 1][j - 1].isOpen = true;
+            } else {
+              matrix[i][j - 1].isOpen = true;
+              matrix[i][j + 1].isOpen = true;
+              matrix[i + 1][j - 1].isOpen = true;
+              matrix[i + 1][j].isOpen = true;
+              matrix[i + 1][j + 1].isOpen = true;
+            }
+          } else if (i === sizeMatrix - 1) {
+            if (j === 0) {
+              matrix[i - 1][j].isOpen = true;
+              matrix[i][j + 1].isOpen = true;
+              matrix[i - 1][j + 1].isOpen = true;
+            } else if (j === sizeMatrix - 1) {
+              matrix[i - 1][j].isOpen = true;
+              matrix[i][j - 1].isOpen = true;
+              matrix[i - 1][j - 1].isOpen = true;
+            } else {
+              matrix[i][j - 1].isOpen = true;
+              matrix[i][j + 1].isOpen = true;
+              matrix[i - 1][j - 1].isOpen = true;
+              matrix[i - 1][j].isOpen = true;
+              matrix[i - 1][j + 1].isOpen = true;
+            }
+          } else {
+            if (j === 0) {
+              matrix[i - 1][j].isOpen = true;
+              matrix[i - 1][j + 1].isOpen = true;
+              matrix[i][j + 1].isOpen = true;
+              matrix[i + 1][j].isOpen = true;
+              matrix[i + 1][j + 1].isOpen = true;
+            } else if (j === sizeMatrix - 1) {
+              matrix[i - 1][j].isOpen = true;
+              matrix[i - 1][j - 1].isOpen = true;
+              matrix[i][j - 1].isOpen = true;
+              matrix[i + 1][j].isOpen = true;
+              matrix[i + 1][j - 1].isOpen = true;
+            } else {
+              matrix[i - 1][j].isOpen = true;
+              matrix[i - 1][j + 1].isOpen = true;
+              matrix[i - 1][j - 1].isOpen = true;
+              matrix[i][j + 1].isOpen = true;
+              matrix[i][j - 1].isOpen = true;
+              matrix[i + 1][j].isOpen = true;
+              matrix[i + 1][j + 1].isOpen = true;
+              matrix[i + 1][j - 1].isOpen = true;
+            }
+          }
+        }
+      });
+    });
+  }
+}
+
+cell.forEach((element, k) => {
+  element.addEventListener("click", (event) => {
+    if (!isBlockedCell) {
+      if (!matrixIsCreate) {
+        newMatrix(k);
+        matrixIsCreate = true;
+      }
+
+      let i = Math.trunc(k / sizeMatrix);
+      let j = k % sizeMatrix;
+      if (!matrix[i][j].isOpen) {
+        matrix[i][j].isOpen = true;
+        if (!matrix[i][j].isNotMine) {
+          gameOver();
+        }
+      }
+      openingFreeCell();
+      isWin();
+      refactorDom();
+      localStorage.setItem("matrix", JSON.stringify(matrix));
+    }
+  });
+});
+
+cell.forEach((element, k) => {
+  element.addEventListener("contextmenu", (event) => {
+    if (!isBlockedCell) {
+      let i = Math.trunc(k / sizeMatrix);
+      let j = k % sizeMatrix;
+      matrix[i][j].isFlag = !matrix[i][j].isFlag;
+      refactorDom();
+      localStorage.setItem("matrix", JSON.stringify(matrix));
+    }
+  });
+});
+
+function isWin() {
+  let isChecked = true;
+  matrix.forEach((_, i) => {
+    matrix[i].forEach((element, j) => {
+      isChecked = !element.isOpen && element.isNotMine ? false : isChecked;
+    });
+  });
+
+  if (isChecked) {
+    matrix.forEach((_, i) => {
+      matrix[i].forEach((element, j) => {
+        element.isNotMine = !element.isNotMine ? "winEnd" : element.isNotMine;
+      });
+    });
+
+    isBlockedCell = true;
+    // скрипт победы
+  }
 }
 
 function gameOver() {
@@ -123,27 +283,6 @@ function gameOver() {
       }
     })
   );
+  isBlockedCell = true;
+  //скрипт поражения
 }
-
-let matrixIsCreate = false;
-
-cell.forEach((element, k) => {
-  element.addEventListener("click", (event) => {
-    if (!matrixIsCreate) {
-      newMatrix(k);
-      matrixIsCreate = true;
-    }
-
-    let i = Math.trunc(k / sizeMatrix);
-    let j = k % sizeMatrix;
-    if (!matrix[i][j].isOpen) {
-      matrix[i][j].isOpen = true;
-      if (!matrix[i][j].isNotMine) {
-        gameOver();
-      }
-    }
-    refactorDom();
-  });
-});
-
-function openingFreeCell() {}
