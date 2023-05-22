@@ -38,12 +38,13 @@ newGame.addEventListener("click", (event) => {
   isBlocked = false;
   matrix = [];
   createMatrix(99999);
+  console.log(matrix, JSON.parse(localStorage.getItem("matrix")));
   refactorField();
 });
 
 function createMatrix(firstCell) {
   if (!!JSON.parse(localStorage.getItem("matrix"))) {
-    console.log(!!JSON.parse(localStorage.getItem("matrix")));
+    console.log(upload, !!JSON.parse(localStorage.getItem("matrix")));
     matrix = JSON.parse(localStorage.getItem("matrix"));
     matrixIsCreate = true;
     refactorField();
@@ -67,6 +68,7 @@ function createMatrix(firstCell) {
     for (let n = 0; n < numberOfMines; n++) {
       arrayMines.push(0);
     }
+
     arrayMines.forEach((_, i) => {
       x = true;
       while (x) {
@@ -80,7 +82,7 @@ function createMatrix(firstCell) {
       }
       arrayMines[i] = randomNumber;
     });
-
+    console.log(arrayMines);
     arrayMines.forEach((element) => {
       let i = Math.trunc(element / sizeMatrix);
       let j = element % sizeMatrix;
@@ -257,6 +259,7 @@ cell.forEach((element, k) => {
         refactorField();
       }
       isWin();
+      console.log("aa", matrix);
     }
   });
 });
